@@ -9,6 +9,7 @@ class User(Base):
     id = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True)
+    password = Column(String)
     role = Column(String, default="guest") # "guest" | "host"
     avatar_url = Column(String)
     is_superhost = Column(Boolean, default=False)
@@ -16,6 +17,7 @@ class User(Base):
 
     listings = relationship("Listing", back_populates="host")
     bookings = relationship("Booking", back_populates="guest")
+    reviews = relationship("Review", back_populates="author")
 
 class Listing(Base):
     __tablename__ = "listings"
@@ -82,6 +84,7 @@ class Review(Base):
 
     id = Column(String, primary_key=True, index=True)
     listing_id = Column(String, ForeignKey("listings.id"))
+    user_id = Column(String, ForeignKey("users.id"))
     author_name = Column(String)
     author_avatar = Column(String)
     rating = Column(Float, default=5.0)
@@ -89,6 +92,7 @@ class Review(Base):
     comment = Column(Text)
 
     listing = relationship("Listing", back_populates="reviews")
+    author = relationship("User", back_populates="reviews")
 
 class Wishlist(Base):
     __tablename__ = "wishlists"
@@ -96,3 +100,4 @@ class Wishlist(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(String, ForeignKey("users.id"))
     listing_id = Column(String, ForeignKey("listings.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)

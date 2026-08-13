@@ -155,3 +155,96 @@ def get_my_trips(guest_id: str = "user_guest_1", db: Session = Depends(get_db)):
         )
 
     return results
+
+@router.patch("/{booking_id}/cancel", response_model=schemas.BookingResponse)
+def cancel_booking(booking_id: str, db: Session = Depends(get_db)):
+    b = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    if not b:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    b.status = "cancelled"
+    db.commit()
+    db.refresh(b)
+    
+    listing = b.listing
+    images = [img.url for img in listing.images] if listing else []
+    amenities_list = json.loads(listing.amenities) if (listing and listing.amenities) else []
+    
+    listing_resp = schemas.ListingResponse(
+        id=listing.id,
+        host_id=listing.host_id,
+        title=listing.title,
+        description=listing.description or "",
+        category=listing.category or "",
+        property_type=listing.property_type or "Entire home",
+        city=listing.city or "",
+        country=listing.country or "",
+        latitude=listing.latitude or 0.0,
+        longitude=listing.longitude or 0.0,
+        price_per_night=listing.price_per_night,
+        cleaning_fee=listing.cleaning_fee or 0.0,
+        service_fee=listing.service_fee or 0.0,
+        max_guests=listing.max_guests,
+        bedrooms=listing.bedrooms,
+        beds=listing.beds,
+        baths=listing.baths,
+        rating=listing.rating or 5.0,
+        reviews_count=listing.reviews_count or 0,
+        images=images,
+        amenities=amenities_list,
+        host=listing.host
+    ) if listing else None
+    
+    return schemas.BookingResponse(
+        id=b.id,
+        listing_id=b.listing_id,
+        guest_id=b.guest_id,
+        check_in=b.check_in,
+        check_out=b.check_out,
+        guests_count=b.guests_count,
+        nightly_price=b.nightly_price,
+        total_nights=b.total_nights,
+        cleaning_fee=b.cleaning_fee,
+        service_fee=b.service_fee,
+        total_price=b.total_price,
+        status=b.status,
+        listing=listing_resp
+    )
+
+@router.get("/host/{host_id}", response_model=List[schemas.BookingResponse])
+def get_host_bookings(host_id: str, db: Session = Depends(get_db)):
+    bookings = db.query(models.Booking).join(models.Listing).filter(models.Listing.host_id == host_id).all()
+    results = []
+    for b in bookings:
+        listing = b.listing
+        images = [img.url for img in listing.images] if listing else []
+        amenities_list = json.loads(listing.amenities) if (listing and listing.amenities) else []
+        listing_resp = schemas.ListingResponse(
+            id=listing.id, host_id=listing.host_id, title=listing.title,
+            description=listing.description or "", category=listing.category or "",
+            property_type=listing.property_type or "Entire home", city=listing.city or "",
+            country=listing.country or "", latitude=listing.latitude or 0.0, longitude=listing.longitude or 0.0,
+            price_per_night=listing.price_per_night, cleaning_fee=listing.cleaning_fee or 0.0,
+            service_fee=listing.service_fee or 0.0, max_guests=listing.max_guests,
+            bedrooms=listing.bedrooms, beds=listing.beds, baths=listing.baths,
+            rating=listing.rating or 5.0, reviews_count=listing.reviews_count or 0,
+            images=images, amenities=amenities_list, host=listing.host
+        ) if listing else None
+        results.append(schemas.BookingResponse(
+            id=b.id, listing_id=b.listing_id, guest_id=b.guest_id, check_in=b.check_in,
+            check_out=b.check_out, guests_count=b.guests_count, nightly_price=b.nightly_price,
+            total_nights=b.total_nights, cleaning_fee=b.cleaning_fee, service_fee=b.service_fee,
+            total_price=b.total_price, status=b.status, listing=listing_resp
+        ))
+    return results
+
+@router.get("/{listing_id}/dates")
+def get_booked_dates(listing_id: str, db: Session = Depends(get_db)):
+    bookings = db.query(models.Booking).filter(
+        models.Booking.listing_id == listing_id,
+        models.Booking.status == "confirmed"
+    ).all()
+    
+    dates = []
+    for b in bookings:
+        dates.append({"check_in": b.check_in, "check_out": b.check_out})
+    return dates

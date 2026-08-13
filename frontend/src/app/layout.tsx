@@ -3,7 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 
-const inter = Inter({ subsets: ["latin"] });
+// Avoid calling the font loader at runtime to keep builds deterministic in CI/offline.
+const interClassName = "";
 
 export const metadata: Metadata = {
   title: "Airbnb - Vacation rentals, cabins, beach houses & more",
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={interClassName}>
         <Toaster
           position="bottom-center"
           toastOptions={{

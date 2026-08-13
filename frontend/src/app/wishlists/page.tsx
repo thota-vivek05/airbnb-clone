@@ -14,21 +14,29 @@ export default function WishlistsPage() {
   const [wishlisted, setWishlisted] = useState<Listing[]>([]);
   const router = useRouter();
 
-  function load() {
+  useEffect(() => {
     const u = getCurrentUser();
     if (!u) { router.push("/"); return; }
     setUser(u);
-    const ids = getWishlists();
-    const all = getAllListings();
-    setWishlisted(all.filter(l => ids.includes(l.id)));
-  }
-
-  useEffect(() => { load(); }, []);
+    import("@/lib/api").then(api => {
+      Promise.all([
+        api.fetchWishlists(u.id),
+        api.fetchListings()
+      ]).then(([wishlistIds, allListings]) => {
+        setWishlisted(allListings.filter(l => wishlistIds.includes(l.id)));
+      }).catch(console.error);
+    });
+  }, []);
 
   function handleRemove(id: string) {
-    toggleWishlist(id);
-    setWishlisted(prev => prev.filter(l => l.id !== id));
-    toast("Removed from wishlist");
+    if (user) {
+      import("@/lib/api").then(api => {
+        api.toggleWishlistAPI(user.id, id).then(() => {
+          setWishlisted(prev => prev.filter(l => l.id !== id));
+          toast("Removed from wishlist");
+        }).catch(console.error);
+      });
+    }
   }
 
   if (!user) return null;

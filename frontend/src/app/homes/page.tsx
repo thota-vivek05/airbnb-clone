@@ -22,7 +22,9 @@ function HomesContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    setListings(getAllListings());
+    import("@/lib/api").then(api => {
+      api.fetchListings().then(setListings).catch(console.error);
+    });
   }, []);
 
   useEffect(() => {

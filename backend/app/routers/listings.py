@@ -15,6 +15,9 @@ def get_listings(
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
     property_type: Optional[str] = None,
+    amenities: Optional[str] = None,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
     query = db.query(models.Listing)
@@ -36,8 +39,13 @@ def get_listings(
         query = query.filter(models.Listing.price_per_night <= max_price)
     if property_type:
         query = query.filter(models.Listing.property_type == property_type)
+    if amenities:
+        # Simple string inclusion logic since we stored as JSON string
+        for amenity in amenities.split(","):
+            search_amenity = f"%{amenity.strip()}%"
+            query = query.filter(models.Listing.amenities.ilike(search_amenity))
 
-    listings = query.all()
+    listings = query.offset(skip).limit(limit).all()
     results = []
 
     for l in listings:
@@ -163,6 +171,59 @@ def create_listing(payload: schemas.ListingCreate, host_id: str = "user_host_1",
         images=payload.images,
         amenities=payload.amenities,
         host=listing.host
+    )
+
+@router.put("/{listing_id}", response_model=schemas.ListingResponse)
+def update_listing(listing_id: str, payload: schemas.ListingUpdate, db: Session = Depends(get_db)):
+    l = db.query(models.Listing).filter(models.Listing.id == listing_id).first()
+    if not l:
+        raise HTTPException(status_code=404, detail="Listing not found")
+        
+    update_data = payload.dict(exclude_unset=True)
+    
+    if "images" in update_data:
+        images = update_data.pop("images")
+        # clear old images
+        db.query(models.ListingImage).filter(models.ListingImage.listing_id == listing_id).delete()
+        for idx, img_url in enumerate(images):
+            db.add(models.ListingImage(listing_id=listing_id, url=img_url, display_order=idx))
+            
+    if "amenities" in update_data:
+        amenities = update_data.pop("amenities")
+        update_data["amenities"] = json.dumps(amenities)
+        
+    for key, value in update_data.items():
+        setattr(l, key, value)
+        
+    db.commit()
+    db.refresh(l)
+    
+    images_list = [img.url for img in l.images]
+    amenities_list = json.loads(l.amenities) if l.amenities else []
+    
+    return schemas.ListingResponse(
+        id=l.id,
+        host_id=l.host_id,
+        title=l.title,
+        description=l.description or "",
+        category=l.category or "",
+        property_type=l.property_type or "Entire home",
+        city=l.city or "",
+        country=l.country or "",
+        latitude=l.latitude or 0.0,
+        longitude=l.longitude or 0.0,
+        price_per_night=l.price_per_night,
+        cleaning_fee=l.cleaning_fee or 0.0,
+        service_fee=l.service_fee or 0.0,
+        max_guests=l.max_guests,
+        bedrooms=l.bedrooms,
+        beds=l.beds,
+        baths=l.baths,
+        rating=l.rating or 5.0,
+        reviews_count=l.reviews_count or 0,
+        images=images_list,
+        amenities=amenities_list,
+        host=l.host
     )
 
 @router.delete("/{listing_id}")

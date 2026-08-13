@@ -90,3 +90,50 @@ class BookingResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ReviewCreate(BaseModel):
+    listing_id: str
+    user_id: str
+    rating: float
+    comment: str
+
+class ReviewResponse(BaseModel):
+    id: str
+    listing_id: str
+    user_id: str
+    author_name: str
+    author_avatar: str
+    rating: float
+    date: str
+    comment: str
+
+    class Config:
+        from_attributes = True
+
+class WishlistResponse(BaseModel):
+    id: int
+    user_id: str
+    listing_id: str
+    created_at: str
+
+    class Config:
+        from_attributes = True
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class ListingUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    property_type: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    price_per_night: Optional[float] = None
+    max_guests: Optional[int] = None
+    bedrooms: Optional[int] = None
+    beds: Optional[int] = None
+    baths: Optional[int] = None
+    images: Optional[List[str]] = None
+    amenities: Optional[List[str]] = None

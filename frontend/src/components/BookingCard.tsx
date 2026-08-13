@@ -1,9 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Star, ChevronDown, ChevronUp, Calendar } from "lucide-react";
 import { Listing } from "@/lib/data";
-import { getCurrentUser, saveBooking, generateId, isDateRangeAvailable, loginUser } from "@/lib/store";
+import { getCurrentUser, generateId, loginUser } from "@/lib/store";
+import { createBookingAPI, fetchBookedDates } from "@/lib/api";
 import toast from "react-hot-toast";
 
 interface BookingCardProps {
@@ -20,10 +21,15 @@ export default function BookingCard({ listing }: BookingCardProps) {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
+  const [bookedDates, setBookedDates] = useState<string[][]>([]);
   const router = useRouter();
 
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  useEffect(() => {
+    fetchBookedDates(listing.id).then(setBookedDates).catch(console.error);
+  }, [listing.id]);
 
   function parseDateInput(value: string) {
     const [year, month, day] = value.split("-").map(Number);
@@ -70,7 +76,22 @@ export default function BookingCard({ listing }: BookingCardProps) {
       toast.error("Check-out must be after check-in");
       return;
     }
-    if (!isDateRangeAvailable(listing, parseDateInput(checkIn), parseDateInput(checkOut))) {
+    function getDatesInRange(startStr: string, endStr: string) {
+      const dates = [];
+      const current = parseDateInput(startStr);
+      const finish = parseDateInput(endStr);
+      while (current < finish) {
+        dates.push(`${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`);
+        current.setDate(current.getDate() + 1);
+      }
+      return dates;
+    }
+
+    const requestedDates = getDatesInRange(checkIn, checkOut);
+    const allBooked = new Set(bookedDates.flatMap(([s, e]) => getDatesInRange(s, e)));
+    const isAvailable = !requestedDates.some(d => allBooked.has(d));
+
+    if (!isAvailable) {
       toast.error("These dates are not available. Please choose different dates.");
       return;
     }
@@ -86,8 +107,13 @@ export default function BookingCard({ listing }: BookingCardProps) {
       status: "confirmed" as const,
       createdAt: new Date().toISOString(),
     };
-    saveBooking(booking);
-    router.push(`/booking-confirmation?id=${booking.id}&listingId=${listing.id}`);
+
+    createBookingAPI(booking).then((b) => {
+      router.push(`/booking-confirmation?id=${b.id}&listingId=${listing.id}`);
+    }).catch((err) => {
+      toast.error("Failed to create booking");
+      console.error(err);
+    });
   }
 
   const inpStyle = {

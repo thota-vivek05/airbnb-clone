@@ -20,19 +20,30 @@ export default function TripsPage() {
     const u = getCurrentUser();
     if (!u) { router.push("/"); return; }
     setUser(u);
-    const userBookings = getUserBookings(u.id);
-    setBookings(userBookings.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-    const all = getAllListings();
-    const map: Record<string, Listing> = {};
-    all.forEach(l => { map[l.id] = l; });
-    setListings(map);
+    import("@/lib/api").then(api => {
+      api.fetchUserBookings(u.id).then(userBookings => {
+        setBookings(userBookings.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      }).catch(console.error);
+      
+      api.fetchListings().then(all => {
+        const map: Record<string, Listing> = {};
+        all.forEach(l => { map[l.id] = l; });
+        setListings(map);
+      }).catch(console.error);
+    });
   }, []);
 
   function handleCancel(bookingId: string) {
     if (!confirm("Are you sure you want to cancel this booking?")) return;
-    cancelBooking(bookingId);
-    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: "cancelled" as const } : b));
-    toast.success("Booking cancelled");
+    import("@/lib/api").then(api => {
+      api.cancelBookingAPI(bookingId).then(() => {
+        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: "cancelled" as const } : b));
+        toast.success("Booking cancelled");
+      }).catch(err => {
+        console.error(err);
+        toast.error("Failed to cancel booking");
+      });
+    });
   }
 
   const upcoming = bookings.filter(b => b.status !== "cancelled" && new Date(b.checkIn) >= new Date());

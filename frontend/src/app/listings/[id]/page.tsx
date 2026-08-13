@@ -11,8 +11,7 @@ import {
 import Navbar, { NavTab } from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BookingCard from "@/components/BookingCard";
-import { getAllListings } from "@/lib/store";
-import { Listing, REVIEWS } from "@/lib/data";
+import { Listing } from "@/lib/data";
 import { toggleWishlist, isWishlisted } from "@/lib/store";
 import toast from "react-hot-toast";
 
@@ -31,9 +30,8 @@ export default function ListingDetailPage() {
   const params = useParams();
   const router = useRouter();
   const listingId = Array.isArray(params.id) ? params.id[0] : params.id;
-  const initialListing = getAllListings().find(l => String(l.id) === String(listingId)) ?? null;
-
-  const [listing, setListing] = useState<Listing | null>(initialListing);
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [wishlisted, setWishlisted] = useState(false);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [currentPhoto, setCurrentPhoto] = useState(0);
@@ -42,14 +40,17 @@ export default function ListingDetailPage() {
   const [activeTab] = useState<NavTab>("homes");
 
   useEffect(() => {
-    const all = getAllListings();
-    const found = all.find(l => String(l.id) === String(listingId));
-    if (found) {
-      setListing(found);
-      setWishlisted(isWishlisted(found.id));
-    } else {
-      setListing(null);
-    }
+    if (!listingId) return;
+    import("@/lib/api").then(api => {
+      api.fetchListing(listingId).then(data => {
+        setListing(data);
+        setWishlisted(isWishlisted(data.id));
+      }).catch(err => {
+        console.error(err);
+        setListing(null);
+      });
+      api.fetchReviews(listingId).then(setReviews).catch(console.error);
+    });
   }, [listingId]);
 
   if (!listing) {
@@ -67,7 +68,7 @@ export default function ListingDetailPage() {
     );
   }
 
-  const reviews = REVIEWS.filter(r => r.listingId === listing.id);
+  // Wait, I already added reviews state.
 
   function handleWishlist() {
     const added = toggleWishlist(listing!.id);

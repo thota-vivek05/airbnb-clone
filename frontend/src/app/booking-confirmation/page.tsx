@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CheckCircle, Star, MapPin, Calendar, Users, ArrowRight, Home, MessageCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { getBookings, getAllListings } from "@/lib/store";
+import { getCurrentUser } from "@/lib/store";
 import { Booking, Listing } from "@/lib/data";
 import { format } from "date-fns";
 
@@ -20,13 +20,16 @@ function ConfirmationContent() {
     const listingId = searchParams.get("listingId");
     if (!bookingId || !listingId) return;
 
-    const bookings = getBookings();
-    const found = bookings.find(b => b.id === bookingId);
-    if (found) setBooking(found);
+    const u = getCurrentUser();
+    if (!u) return;
 
-    const listings = getAllListings();
-    const foundListing = listings.find(l => l.id === listingId);
-    if (foundListing) setListing(foundListing);
+    import("@/lib/api").then(api => {
+      api.fetchListing(listingId).then(setListing).catch(console.error);
+      api.fetchUserBookings(u.id).then(bookings => {
+        const found = bookings.find(b => b.id === bookingId);
+        if (found) setBooking(found);
+      }).catch(console.error);
+    });
   }, [searchParams]);
 
   if (!booking || !listing) {

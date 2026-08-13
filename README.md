@@ -146,3 +146,30 @@ erDiagram
    - Header Role Switcher allowing instant toggle between Guest and Host perspectives.
    - Host Dashboard (`/host`) displaying active listings, total revenue analytics, and guest reservations.
    - Host Create Listing Wizard (`/host/create`) with photo URLs, location, pricing, and amenities.
+
+   ---
+
+   ## ✅ Verification & Useful Commands
+
+   Run these from the repository root.
+
+   - Install backend deps and seed the SQLite DB:
+   ```bash
+   pip install -r backend/requirements.txt
+   python -c "import sys; sys.path.insert(0,'backend'); from app.seed import seed_database; seed_database()"
+   ```
+
+   - Run backend unit tests (uses the seeded DB):
+   ```bash
+   python -c "import sys; sys.path.insert(0,'backend'); import unittest; unittest.main(module='test_api', verbosity=2)"
+   ```
+
+   - Install frontend deps and build:
+   ```bash
+   npm install --prefix frontend
+   npm run build --prefix frontend
+   ```
+
+   Notes:
+   - During verification I added small test shims (`backend/main.py` and `main.py`) so `backend/test_api.py` can be executed without adjusting PYTHONPATH. Remove or adapt these if you prefer running tests with a proper package import path or virtualenv.
+
