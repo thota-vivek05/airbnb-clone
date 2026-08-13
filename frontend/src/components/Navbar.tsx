@@ -14,11 +14,31 @@ interface NavbarProps {
   onTabChange?: (tab: NavTab) => void;
 }
 
-const TABS: { id: NavTab; label: string; icon: string }[] = [
-  { id: "all", label: "All", icon: "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/e2e1c806-2c65-4f0f-a85a-a7ae9a20d2e6.png?im_w=120" }, 
-  { id: "homes", label: "Homes", icon: "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/3afe83ba-9aab-403b-a6f6-e4f557d74fc7.png?im_w=120" },
-  { id: "experiences", label: "Experiences", icon: "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/20e459e2-008c-42a1-a674-8b00fd841c2f.png?im_w=120" },
-  { id: "services", label: "Services", icon:"https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/e048a726-9fe8-4d55-812f-173427f08588.png?im_w=120"  },
+const TABS: { id: NavTab; label: string; activeIcon: string; inactiveIcon: string }[] = [
+  {
+    id: "all",
+    label: "All",
+    activeIcon: "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/f50ce552-509c-4f54-af4c-605c5220d906.png?im_w=240",
+    inactiveIcon: "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/a811de29-114f-43a0-b8c5-698d4564bd04.png?im_w=240",
+  },
+  {
+    id: "homes",
+    label: "Homes",
+    activeIcon: "https://a0.muscache.com/im/pictures/airbnb-platform-assets/AirbnbPlatformAssets-search-bar-icons/original/a32adab1-f9df-47e1-a411-bdff91b579c3.png?im_w=240",
+    inactiveIcon: "https://a0.muscache.com/im/pictures/airbnb-platform-assets/AirbnbPlatformAssets-search-bar-icons/original/4aae4ed7-5939-4e76-b100-e69440ebeae4.png?im_w=240",
+  },
+  {
+    id: "experiences",
+    label: "Experiences",
+    activeIcon: "https://a0.muscache.com/im/pictures/airbnb-platform-assets/AirbnbPlatformAssets-search-bar-icons/original/e47ab655-027b-4679-b2e6-df1c99a5c33d.png?im_w=240",
+    inactiveIcon: "https://a0.muscache.com/im/pictures/airbnb-platform-assets/AirbnbPlatformAssets-search-bar-icons/original/1e24b1c9-b070-48d9-8a70-91aae3151830.png?im_w=240",
+  },
+  {
+    id: "services",
+    label: "Services",
+    activeIcon: "https://a0.muscache.com/im/pictures/airbnb-platform-assets/AirbnbPlatformAssets-search-bar-icons/original/3d67e9a9-520a-49ee-b439-7b3a75ea814d.png?im_w=240",
+    inactiveIcon: "https://a0.muscache.com/im/pictures/airbnb-platform-assets/AirbnbPlatformAssets-search-bar-icons/original/2bf5d36d-e731-4465-a8ef-91abbf2ae8ce.png?im_w=240",
+  },
 ];
 
 export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
@@ -96,12 +116,11 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
             height: "72px",
           }}
         >
-          {/* Logo */}
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none", flexShrink: 0 }}>
-            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style={{ width: "32px", height: "32px", fill: "#FF385C" }}>
-              <path d="M16 1c2.008 0 3.463.963 4.751 3.269l.533 1.025c1.954 3.83 6.114 12.54 7.1 14.836l.145.353c.667 1.591.91 2.472.96 3.396l.01.415.001.228c0 4.062-2.877 6.478-6.357 6.478-2.224 0-4.556-1.258-6.709-3.386l-.257-.26-.172-.179h-.011l-.176.185c-2.044 2.1-4.267 3.44-6.414 3.6l-.28.019-.267.006C5.377 31 2.5 28.584 2.5 24.522l.005-.469c.026-.928.23-1.768.83-3.244l.216-.524c.966-2.298 6.083-12.989 7.16-15.015l.205-.404.535-1.028C11.538 1.963 12.992 1 15 1h1zm0 2h-1c-1.32 0-2.27.618-3.27 2.388l-.532 1.024C10.338 8.41 5.22 19.105 4.26 21.401l-.215.524c-.492 1.21-.672 1.94-.693 2.686L3.35 24.522c0 3.076 2.016 4.478 4.15 4.478 1.806 0 3.8-1.153 5.653-3.082l.232-.246.295-.313.362-.404.335.396.268.303c1.977 2.145 4.1 3.346 5.955 3.346 2.134 0 4.15-1.402 4.15-4.478l-.005-.386c-.031-.775-.246-1.565-.8-2.904l-.226-.548c-.922-2.194-6.007-12.89-7.125-15.022l-.531-1.025C18.271 3.618 17.32 3 16 3zm0 7.5c1.381 0 2.5 1.119 2.5 2.5S17.381 15.5 16 15.5 13.5 14.381 13.5 13s1.119-2.5 2.5-2.5z" />
+          {/* Official Airbnb SVG Logo */}
+          <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0, color: "#FF385C" }}>
+            <svg width="102" height="32" viewBox="0 0 3490 1080" style={{ display: "block", fill: "#FF385C" }}>
+              <path d="M1494.71 456.953C1458.28 412.178 1408.46 389.892 1349.68 389.892C1233.51 389.892 1146.18 481.906 1146.18 605.892C1146.18 729.877 1233.51 821.892 1349.68 821.892C1408.46 821.892 1458.28 799.605 1494.71 754.83L1500.95 810.195H1589.84V401.588H1500.95L1494.71 456.953ZM1369.18 736.895C1295.33 736.895 1242.08 683.41 1242.08 605.892C1242.08 528.373 1295.33 474.888 1369.18 474.888C1443.02 474.888 1495.49 529.153 1495.49 605.892C1495.49 682.63 1443.8 736.895 1369.18 736.895ZM1656.11 810.195H1750.46V401.588H1656.11V810.195ZM948.912 666.715C875.618 506.859 795.308 344.664 713.438 184.809C698.623 155.177 670.554 98.2527 645.603 67.8412C609.736 24.1733 556.715 0.779785 502.915 0.779785C449.115 0.779785 396.094 24.1733 360.227 67.8412C335.277 98.2527 307.207 155.177 292.392 184.809C210.522 344.664 130.212 506.859 56.9187 666.715C47.5621 687.769 24.9504 737.675 16.3736 760.289C6.2373 787.581 0.779297 817.213 0.779297 846.845C0.779297 975.509 101.362 1079.22 235.473 1079.22C346.193 1079.22 434.3 1008.26 502.915 934.18C571.53 1008.26 659.638 1079.22 770.357 1079.22C904.468 1079.22 1005.83 975.509 1005.83 846.845C1005.83 817.213 999.593 787.581 989.457 760.289C980.88 737.675 958.268 687.769 948.912 666.715ZM502.915 810.195C447.555 738.455 396.094 649.56 396.094 577.819C396.094 506.079 446.776 470.209 502.915 470.209C559.055 470.209 610.516 508.419 610.516 577.819C610.516 647.22 558.275 738.455 502.915 810.195ZM770.357 998.902C688.362 998.902 618.032 941.557 555.741 872.656C619.966 792.541 690.826 679.121 690.826 577.819C690.826 458.513 598.04 389.892 502.915 389.892C407.79 389.892 315.784 458.513 315.784 577.819C315.784 679.098 386.145 792.478 450.144 872.593C387.845 941.526 317.491 998.902 235.473 998.902C146.586 998.902 81.0898 931.061 81.0898 846.845C81.0898 826.57 84.2087 807.856 91.2261 788.361C98.2436 770.426 120.855 720.52 130.212 701.025C203.505 541.17 282.256 380.534 364.126 220.679C378.941 191.047 403.891 141.921 422.605 119.307C442.877 94.3538 470.947 81.0975 502.915 81.0975C534.883 81.0975 562.953 94.3538 583.226 119.307C601.939 141.921 626.89 191.047 641.704 220.679C723.574 380.534 802.325 541.17 875.618 701.025C884.975 720.52 907.587 770.426 914.604 788.361C921.622 807.856 925.52 826.57 925.52 846.845C925.52 931.061 859.244 998.902 770.357 998.902ZM3285.71 389.892C3226.91 389.892 3175.97 413.098 3139.91 456.953V226.917H3045.56V810.195H3134.45L3140.69 754.83C3177.12 799.605 3226.94 821.892 3285.71 821.892C3401.89 821.892 3489.22 729.877 3489.22 605.892C3489.22 481.906 3401.89 389.892 3285.71 389.892ZM3266.22 736.895C3191.6 736.895 3139.91 682.63 3139.91 605.892C3139.91 529.153 3191.6 474.888 3266.22 474.888C3340.85 474.888 3393.32 528.373 3393.32 605.892C3393.32 683.41 3340.07 736.895 3266.22 736.895ZM2827.24 389.892C2766.15 389.892 2723.56 418.182 2699.37 456.953L2693.13 401.588H2604.24V810.195H2698.59V573.921C2698.59 516.217 2741.47 474.888 2800.73 474.888C2856.87 474.888 2888.84 513.097 2888.84 578.599V810.195H2983.19V566.903C2983.19 457.733 2923.15 389.892 2827.24 389.892ZM1911.86 460.072L1905.62 401.588H1816.73V810.195H1911.08V604.332C1911.08 532.592 1954.74 486.585 2027.26 486.585C2042.85 486.585 2058.44 488.144 2070.92 492.043V401.588C2059.22 396.91 2044.41 395.35 2028.04 395.35C1978.58 395.35 1936.66 421.177 1911.86 460.072ZM2353.96 389.892C2295.15 389.892 2244.21 413.098 2208.15 456.953V226.917H2113.8V810.195H2202.69L2208.93 754.83C2245.36 799.605 2295.18 821.892 2353.96 821.892C2470.13 821.892 2557.46 729.877 2557.46 605.892C2557.46 481.906 2470.13 389.892 2353.96 389.892ZM2334.46 736.895C2259.84 736.895 2208.15 682.63 2208.15 605.892C2208.15 529.153 2259.84 474.888 2334.46 474.888C2409.09 474.888 2461.56 528.373 2461.56 605.892C2461.56 683.41 2408.31 736.895 2334.46 736.895ZM1703.28 226.917C1669.48 226.917 1642.08 254.326 1642.08 288.13C1642.08 321.934 1669.48 349.343 1703.28 349.343C1737.09 349.343 1764.49 321.934 1764.49 288.13C1764.49 254.326 1737.09 226.917 1703.28 226.917Z" fill="currentcolor"></path>
             </svg>
-            <span style={{ color: "#FF385C", fontWeight: 700, fontSize: "20px", letterSpacing: "-0.5px" }}>airbnb</span>
           </Link>
 
           {/* Center: Tabs or Compact Search Bar */}
@@ -155,7 +174,11 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  <img src={tab.icon} alt={tab.label} style={{ width: "24px", height: "24px", opacity: activeTab === tab.id ? 1 : 0.65 }} />
+                  <img
+                    src={activeTab === tab.id ? tab.activeIcon : tab.inactiveIcon}
+                    alt={tab.label}
+                    style={{ width: "36px", height: "36px" }}
+                  />
                   <span>{tab.label}</span>
                 </button>
               ))}
