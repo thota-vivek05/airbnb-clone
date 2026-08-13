@@ -1,5 +1,16 @@
 "use client";
 import { Booking, Listing, User, LISTINGS, USERS } from "./data";
+import {
+  fetchListings,
+  createListingAPI,
+  updateListingAPI,
+  deleteListingAPI,
+  createBookingAPI,
+  cancelBookingAPI,
+  toggleWishlistAPI,
+  fetchUserBookings,
+  fetchWishlists,
+} from "./api";
 
 const STORAGE_KEYS = {
   BOOKINGS: "airbnb_bookings",
@@ -52,6 +63,18 @@ export function saveBooking(booking: Booking): void {
   const bookings = getBookings();
   bookings.push(booking);
   localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(bookings));
+
+  // Sync to FastAPI Backend SQLite DB asynchronously
+  createBookingAPI({
+    listingId: booking.listingId,
+    userId: booking.userId,
+    checkIn: booking.checkIn,
+    checkOut: booking.checkOut,
+    guests: booking.guests,
+    totalPrice: booking.totalPrice,
+    status: booking.status,
+    createdAt: booking.createdAt,
+  }).catch((err) => console.warn("Backend API sync fallback:", err));
 }
 
 export function getUserBookings(userId: string): Booking[] {
@@ -65,6 +88,9 @@ export function cancelBooking(bookingId: string): void {
     bookings[idx].status = "cancelled";
     localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(bookings));
   }
+
+  // Sync cancel to FastAPI Backend
+  cancelBookingAPI(bookingId).catch((err) => console.warn("Backend cancel sync fallback:", err));
 }
 
 // --- Wishlists ---
@@ -74,18 +100,23 @@ export function getWishlists(): string[] {
   return data ? JSON.parse(data) : [];
 }
 
-export function toggleWishlist(listingId: string): boolean {
+export function toggleWishlist(listingId: string, userId: string = "u1"): boolean {
   const wishlists = getWishlists();
   const idx = wishlists.indexOf(listingId);
+  let added = false;
   if (idx === -1) {
     wishlists.push(listingId);
     localStorage.setItem(STORAGE_KEYS.WISHLISTS, JSON.stringify(wishlists));
-    return true;
+    added = true;
   } else {
     wishlists.splice(idx, 1);
     localStorage.setItem(STORAGE_KEYS.WISHLISTS, JSON.stringify(wishlists));
-    return false;
+    added = false;
   }
+
+  // Sync wishlist toggle to FastAPI Backend DB
+  toggleWishlistAPI(userId, listingId).catch((err) => console.warn("Backend wishlist sync fallback:", err));
+  return added;
 }
 
 export function isWishlisted(listingId: string): boolean {
@@ -104,8 +135,29 @@ export function saveHostListing(listing: Listing): void {
   const idx = listings.findIndex(l => l.id === listing.id);
   if (idx !== -1) {
     listings[idx] = listing;
+    updateListingAPI(listing.id, listing as any).catch((err) => console.warn("Backend listing update fallback:", err));
   } else {
     listings.push(listing);
+    createListingAPI({
+      title: listing.title,
+      location: listing.location,
+      city: listing.city,
+      country: listing.country,
+      type: listing.type,
+      price: listing.price,
+      currency: listing.currency,
+      images: listing.images,
+      description: listing.description,
+      amenities: listing.amenities,
+      maxGuests: listing.maxGuests,
+      bedrooms: listing.bedrooms,
+      bathrooms: listing.bathrooms,
+      beds: listing.beds,
+      category: listing.category,
+      hostId: listing.hostId,
+      lat: listing.coordinates?.lat,
+      lng: listing.coordinates?.lng,
+    }).catch((err) => console.warn("Backend listing create fallback:", err));
   }
   localStorage.setItem(STORAGE_KEYS.LISTINGS, JSON.stringify(listings));
 }
@@ -113,6 +165,9 @@ export function saveHostListing(listing: Listing): void {
 export function deleteHostListing(listingId: string): void {
   const listings = getHostListings().filter(l => l.id !== listingId);
   localStorage.setItem(STORAGE_KEYS.LISTINGS, JSON.stringify(listings));
+
+  // Sync delete to FastAPI Backend DB
+  deleteListingAPI(listingId).catch((err) => console.warn("Backend delete listing fallback:", err));
 }
 
 export function getAllListings(): Listing[] {
