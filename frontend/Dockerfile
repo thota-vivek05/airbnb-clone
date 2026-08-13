@@ -12,8 +12,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# NEXT_PUBLIC_API_URL must be set at build time so Next.js bakes it in.
-# Pass it via --build-arg when running docker build, or set it in render.yaml.
+# Accept backend URL at build time (pass via --build-arg or Render env var)
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
@@ -25,14 +24,17 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+# HOSTNAME=0.0.0.0 is required for Next.js standalone to bind on all interfaces
+# Without this, Render's reverse proxy cannot reach the container (502 error)
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+
+EXPOSE 3000
 
 # Copy only the output needed to run the server
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Render injects PORT; Next.js standalone server reads it automatically
-ENV PORT=3000
-EXPOSE 3000
-
 CMD ["node", "server.js"]
+
