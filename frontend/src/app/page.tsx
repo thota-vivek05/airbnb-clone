@@ -143,15 +143,6 @@ export default function Home() {
     <div style={{ minHeight: "100vh", background: "white", fontFamily: "Inter, -apple-system, sans-serif" }}>
       <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Search bar */}
-      <HomeSearchBar
-        thirdLabel={searchBarProps[activeTab].thirdLabel}
-        thirdPlaceholder={searchBarProps[activeTab].thirdPlaceholder}
-      />
-
-      {/* Divider */}
-      <div style={{ height: "1px", background: "#EBEBEB" }} />
-
       {/* Main content */}
       <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 24px 80px" }}>
         {activeTab === "all" && <AllContent />}
