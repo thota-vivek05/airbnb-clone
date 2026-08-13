@@ -1,4 +1,4 @@
-# render.yaml — deploy both services from this monorepo on Render
+# render.yaml ï¿½ deploy both services from this monorepo on Render
 # Docs: https://render.com/docs/blueprint-spec
 
 services:
@@ -24,7 +24,7 @@ services:
       # Render replaces this at build time with your backend public URL.
       # Update this after you deploy the backend and get its URL.
       - key: NEXT_PUBLIC_API_URL
-        value: https://airbnb-clone-backend.onrender.com
+        value: https://airbnb-clone-backend-kjke.onrender.com
     envVars:
       - key: PORT
         value: 3000
