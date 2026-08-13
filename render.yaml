@@ -1,0 +1,30 @@
+# render.yaml — deploy both services from this monorepo on Render
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  # -- Backend (FastAPI) ------------------------------------------------------
+  - type: web
+    name: airbnb-clone-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8000
+
+  # -- Frontend (Next.js) -----------------------------------------------------
+  - type: web
+    name: airbnb-clone-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: free
+    buildArgs:
+      # Render replaces this at build time with your backend public URL.
+      # Update this after you deploy the backend and get its URL.
+      - key: NEXT_PUBLIC_API_URL
+        value: https://airbnb-clone-backend.onrender.com
+    envVars:
+      - key: PORT
+        value: 3000
